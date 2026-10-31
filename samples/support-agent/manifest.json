@@ -1,0 +1,7 @@
+{
+  "format": "forgent-agent-v1",
+  "runtime": "knowledge-support-v1",
+  "name": "Northstar Support",
+  "description": "Answers questions using knowledge articles and hands off requests it cannot answer.",
+  "priceMicros": 2000
+}
