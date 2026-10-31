@@ -156,3 +156,5 @@ track/
 
 # Local test runner cache
 .test-tmp/
+.neon
+.next-dev-*/

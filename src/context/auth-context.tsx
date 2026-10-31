@@ -8,6 +8,8 @@ import {
 } from "@/lib/auth-session";
 
 interface AuthContextType {
+  demoPersona: DemoPersona;
+  setDemoPersona: (persona: DemoPersona) => Promise<void>;
   session: ForgentUserSession;
   isLoading: boolean;
   isAuthModalOpen: boolean;
@@ -19,6 +21,15 @@ interface AuthContextType {
   logout: () => Promise<void>;
 }
 
+export type DemoPersona = "individual" | "builder" | "business";
+export const DEMO_PERSONA_KEY = "forgent-demo-persona";
+function readDemoPersona(): DemoPersona {
+  try {
+    const stored = window.localStorage.getItem(DEMO_PERSONA_KEY);
+    return stored === "builder" || stored === "business" ? stored : "individual";
+  } catch { return "individual"; }
+}
+
 const defaultSession: ForgentUserSession = createPersonaSession("BUYER");
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,7 +37,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<ForgentUserSession>(defaultSession);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [demoPersona, setPersona] = useState<DemoPersona>("individual");
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+
+  const rememberPersona = (persona: DemoPersona) => {
+    try { if (persona === "individual") window.localStorage.removeItem(DEMO_PERSONA_KEY); else window.localStorage.setItem(DEMO_PERSONA_KEY, persona); } catch { /* The selection remains active for this page. */ }
+    setPersona(persona);
+  };
 
   const fetchSession = useCallback(async () => {
     try {
@@ -48,6 +65,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     fetchSession();
   }, [fetchSession]);
 
+  useEffect(() => {
+    setPersona(readDemoPersona());
+    const sync = (event: StorageEvent) => { if (event.key === DEMO_PERSONA_KEY) { setPersona(readDemoPersona()); void fetchSession(); } };
+    window.addEventListener("storage", sync);
+    return () => window.removeEventListener("storage", sync);
+  }, [fetchSession]);
+
+  const setDemoPersona = async (persona: DemoPersona) => {
+    const response = await fetch("/api/auth/session", persona === "individual" ? { method: "DELETE" } : {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "switch_persona", role: persona === "builder" ? "CREATOR" : "BUYER" }),
+    });
+    if (!response.ok) throw new Error("Could not switch workspace.");
+    if (persona === "individual") setSession(defaultSession);
+    else { const data = await response.json(); setSession(data.session); }
+    rememberPersona(persona);
+  };
+
   const loginWithPersona = async (role: UserRole) => {
     try {
       const res = await fetch("/api/auth/session", {
@@ -58,10 +93,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (res.ok) {
         const data = await res.json();
         setSession(data.session);
+        rememberPersona(role === "CREATOR" ? "builder" : "business");
         setIsAuthModalOpen(false);
       }
     } catch {
       setSession(createPersonaSession(role));
+      rememberPersona(role === "CREATOR" ? "builder" : "business");
       setIsAuthModalOpen(false);
     }
   };
@@ -129,11 +166,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await fetch("/api/auth/session", { method: "DELETE" });
     } catch {}
     setSession(defaultSession);
+    rememberPersona("individual");
   };
 
   return (
     <AuthContext.Provider
       value={{
+        demoPersona,
+        setDemoPersona,
         session,
         isLoading,
         isAuthModalOpen,

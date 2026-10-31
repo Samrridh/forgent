@@ -5,8 +5,8 @@ import { PublishWizardForm, CreatorAgent } from "../creator-types";
 import { DEFAULT_WIZARD_FORM } from "../creator-data";
 import { StepIdentity } from "./step-identity";
 import { StepTaskContract } from "./step-task-contract";
-import { StepEndpoint } from "./step-endpoint";
-import { StepVerificationSuite } from "./step-verification-suite";
+import { StepReviewSummary } from "./step-review-summary";
+import { StepPackageReview, type ReviewResult } from "./step-package-review";
 import {
   User,
   FileCode,
@@ -15,6 +15,7 @@ import {
   ArrowRight,
   ArrowLeft,
   Check,
+  PackageOpen,
 } from "lucide-react";
 
 interface PublishWizardProps {
@@ -25,17 +26,19 @@ interface PublishWizardProps {
 const STEPS = [
   { id: 1, label: "Identity", icon: User },
   { id: 2, label: "Task Contract", icon: FileCode },
-  { id: 3, label: "Endpoint", icon: Network },
-  { id: 4, label: "Verification Suite", icon: ShieldCheck },
+  { id: 3, label: "Package Review", icon: PackageOpen },
+  { id: 4, label: "Endpoint", icon: Network },
+  { id: 5, label: "Review & next steps", icon: ShieldCheck },
 ];
 
-export function PublishWizard({ onPublishAgent, onCancel }: PublishWizardProps) {
+export function PublishWizard({ onCancel }: PublishWizardProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<PublishWizardForm>(DEFAULT_WIZARD_FORM);
-  const [isPublishing, setIsPublishing] = useState(false);
+  const [review, setReview] = useState<ReviewResult | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
 
   const updateFormData = (fields: Partial<PublishWizardForm>) => {
+    if ("name" in fields || "bio" in fields || "inputSchema" in fields || "outputFormat" in fields) setReview(null);
     setFormData((prev) => ({ ...prev, ...fields }));
     setValidationError(null);
   };
@@ -62,9 +65,12 @@ export function PublishWizard({ onPublishAgent, onCancel }: PublishWizardProps) 
         setValidationError("Input Schema and Output Format must be valid JSON.");
         return false;
       }
-    } else if (currentStep === 3) {
-      if (formData.endpointType === "webhook" && (!formData.webhookUrl || !formData.webhookUrl.startsWith("http"))) {
-        setValidationError("Please provide a valid HTTPS webhook URL.");
+    } else if (currentStep === 4) {
+      try {
+        const endpoint = new URL(formData.webhookUrl);
+        if (endpoint.protocol !== "https:" || endpoint.username || endpoint.password || endpoint.search || endpoint.hash) throw new Error();
+      } catch {
+        setValidationError("Enter a public HTTPS endpoint without credentials or query parameters.");
         return false;
       }
     }
@@ -73,7 +79,7 @@ export function PublishWizard({ onPublishAgent, onCancel }: PublishWizardProps) 
 
   const handleNext = () => {
     if (validateCurrentStep()) {
-      setCurrentStep((prev) => Math.min(prev + 1, 4));
+      setCurrentStep((prev) => Math.min(prev + 1, STEPS.length));
     }
   };
 
@@ -82,47 +88,12 @@ export function PublishWizard({ onPublishAgent, onCancel }: PublishWizardProps) 
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
-  const handlePublish = () => {
-    setIsPublishing(true);
-    setTimeout(() => {
-      const slug = formData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-      const priceUsd = formData.pricePerTaskUsd;
-      const priceInr = Math.round(priceUsd * 80);
-
-      const newAgent: CreatorAgent = {
-        id: `cr-agent-${Date.now().toString(36)}`,
-        slug: slug || "custom-verified-agent",
-        name: formData.name,
-        category: formData.category,
-        bio: formData.bio,
-        avatarIcon: formData.avatarIcon,
-        version: "v1.0.0",
-        status: "ACTIVE",
-        verified: true,
-        benchmarkScore: 99.7,
-        taskVolume30d: 0,
-        successRate: 100.0,
-        avgLatencyMs: 220,
-        pricePerTaskUsd: priceUsd,
-        pricePerTaskInr: priceInr,
-        earnings30dUsd: 0,
-        earnings30dInr: 0,
-        endpointUrl: formData.endpointType === "webhook" ? formData.webhookUrl : `local://${formData.selectedTemplateId}`,
-        inputSchema: formData.inputSchema,
-        outputSchema: formData.outputFormat,
-        createdAt: new Date().toISOString(),
-      };
-
-      onPublishAgent(newAgent);
-      setIsPublishing(false);
-    }, 800);
-  };
 
   return (
     <div className="bg-surface-primary border border-border-default rounded-xl p-6 sm:p-8 space-y-8 shadow-xs">
       {/* 4-Step Stepper Header */}
       <div className="border-b border-border-subtle pb-6">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {STEPS.map((step) => {
             const Icon = step.icon;
             const isCompleted = currentStep > step.id;
@@ -133,7 +104,7 @@ export function PublishWizard({ onPublishAgent, onCancel }: PublishWizardProps) 
                 key={step.id}
                 type="button"
                 onClick={() => {
-                  if (step.id < currentStep || validateCurrentStep()) {
+                  if (step.id < currentStep || (step.id === currentStep + 1 && validateCurrentStep())) {
                     setCurrentStep(step.id);
                   }
                 }}
@@ -182,16 +153,14 @@ export function PublishWizard({ onPublishAgent, onCancel }: PublishWizardProps) 
         {currentStep === 2 && (
           <StepTaskContract formData={formData} onChange={updateFormData} />
         )}
-        {currentStep === 3 && (
-          <StepEndpoint formData={formData} onChange={updateFormData} />
-        )}
         {currentStep === 4 && (
-          <StepVerificationSuite
-            formData={formData}
-            onChange={updateFormData}
-            onPublish={handlePublish}
-            isPublishing={isPublishing}
-          />
+          <section className="space-y-4"><div className="border-b border-border-subtle pb-4"><h3 className="text-base font-bold text-slate-900">Step 4: Builder-hosted endpoint</h3><p className="text-xs text-slate-500 mt-1">Your service receives a POST request with a JSON task and returns a JSON result.</p></div><label className="block text-sm font-semibold text-slate-800">Public HTTPS endpoint<input className="form-input mt-2" type="url" value={formData.webhookUrl} onChange={(event) => updateFormData({ webhookUrl: event.target.value })} placeholder="https://your-agent.example/run" /></label><div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">Expected request: <code>{'{"task":"..."}'}</code>. Expected response: <code>{'{"result":"..."}'}</code>. Do not put credentials in the URL. The uploaded ZIP is not deployed.</div></section>
+        )}
+        <div hidden={currentStep !== 3}>
+          <StepPackageReview key={JSON.stringify([formData.name, formData.bio, formData.inputSchema, formData.outputFormat])} formData={formData} onReviewChange={setReview} />
+        </div>
+        {currentStep === 5 && (
+          <StepReviewSummary report={review?.report || null} formData={formData} onBackToPackage={() => setCurrentStep(3)} />
         )}
       </div>
 
@@ -219,7 +188,7 @@ export function PublishWizard({ onPublishAgent, onCancel }: PublishWizardProps) 
         </div>
 
         <div className="flex items-center gap-3">
-          {currentStep < 4 && (
+          {currentStep < STEPS.length && (
             <button
               type="button"
               onClick={handleNext}

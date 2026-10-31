@@ -1,3 +1,4 @@
+import type { DemoListing } from "./demo-listing-contract";
 import { z } from "zod";
 export const ArticleSchema = z.object({ id: z.string().min(1), title: z.string().min(1).max(120), content: z.string().min(1).max(10000) });
 export const ArticleInputSchema = ArticleSchema.omit({ id: true });
@@ -19,4 +20,4 @@ export interface EvaluationCase { id:string; name:string; passed:boolean; detail
 export interface EvaluationReport { testedAt:string; passed:boolean; cases:EvaluationCase[]; answeredPassed:number; handoffsPassed:number }
 export interface BuilderAgent { id:string; name:string; description:string; endpointUrl:string; runtime?:"knowledge-support-v1"; priceMicros:number; version:number; status:"draft"|"passed"|"failed"|"published"; report:EvaluationReport|null; createdAt:string }
 export interface DiscordStatus { guildId:string; supportChannelId:string; staffChannelId:string; agentId:string; lastSeenAt:string }
-export interface DemoStore { discordStatus?:DiscordStatus|null; agents:BuilderAgent[]; version: 1; keys: DemoKey[]; articles: Article[]; runs: DemoRun[]; handoffs: Handoff[] }
+export interface DemoStore { demoListings?: DemoListing[]; discordStatus?:DiscordStatus|null; agents:BuilderAgent[]; version: 1; keys: DemoKey[]; articles: Article[]; runs: DemoRun[]; handoffs: Handoff[] }

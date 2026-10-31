@@ -1,12 +1,5 @@
-import { Metadata } from "next";
-import { EnterprisePortal } from "@/components/enterprise/enterprise-portal";
-
-export const metadata: Metadata = {
-  title: "Enterprise Hub — Forgent Command Centre",
-  description:
-    "Construct multi-agent DAG pipelines, run synthetic test flights, and manage departmental escrow spend.",
-};
+import { BusinessDashboard } from "@/components/business/business-dashboard";
 
 export default function BuyerOverviewPage() {
-  return <EnterprisePortal />;
+  return <BusinessDashboard />;
 }

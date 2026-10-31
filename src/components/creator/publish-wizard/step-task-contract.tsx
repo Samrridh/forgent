@@ -25,10 +25,10 @@ export function StepTaskContract({ formData, onChange }: StepTaskContractProps) 
   const priceUsd = formData.pricePerTaskUsd || MIN_PRICE_USD;
   const priceInr = Math.round(priceUsd * 80);
 
-  // Revenue split calculations (85% Creator / 15% Network Protocol)
-  const creatorShareUsd = priceUsd * 0.85;
+  // Revenue split calculations (95% Creator / 5% Network Protocol)
+  const creatorShareUsd = priceUsd * 0.95;
   const creatorShareInr = Math.round(creatorShareUsd * 80);
-  const networkShareUsd = priceUsd * 0.15;
+  const networkShareUsd = priceUsd * 0.05;
   const networkShareInr = Math.round(networkShareUsd * 80);
 
   const isPriceValid = priceUsd >= MIN_PRICE_USD && priceUsd <= MAX_PRICE_USD;
@@ -54,7 +54,7 @@ export function StepTaskContract({ formData, onChange }: StepTaskContractProps) 
       <div className="border-b border-border-subtle pb-4">
         <h3 className="text-base font-bold text-slate-900">Step 2: Task Contract &amp; Pricing Economics</h3>
         <p className="text-xs text-slate-500 mt-1">
-          Specify input validation schemas, deliverable response shapes, and per-task fee with live 85/15 revenue split.
+          Describe input and output structures as JSON, and set a per-task fee with an illustrative 95/5 revenue split.
         </p>
       </div>
 
@@ -168,20 +168,20 @@ export function StepTaskContract({ formData, onChange }: StepTaskContractProps) 
           </p>
         )}
 
-        {/* 85/15 Live Revenue Split Calculator */}
+        {/* 95/5 Live Revenue Split Calculator */}
         <div className="mt-4 pt-4 border-t border-border-subtle">
           <div className="flex items-center gap-1.5 text-xs font-mono font-semibold text-slate-700 uppercase mb-3">
             <Calculator className="w-3.5 h-3.5 text-cobalt-600" />
-            <span>85 / 15 Live Revenue Split Breakdown</span>
+            <span>95 / 5 Illustrative Revenue Split Breakdown</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Creator Share (85%) */}
+            {/* Creator Share (95%) */}
             <div className="p-3.5 rounded-lg border border-emerald-200 bg-emerald-50/60 flex items-center justify-between">
               <div>
                 <div className="text-[11px] font-mono uppercase text-emerald-800 font-semibold flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Creator Payout Share (85%)</span>
+                  <span>Creator Payout Share (95%)</span>
                 </div>
                 <div className="text-lg font-bold font-mono text-emerald-950 mt-1">
                   ${creatorShareUsd.toFixed(2)}{" "}
@@ -191,16 +191,16 @@ export function StepTaskContract({ formData, onChange }: StepTaskContractProps) 
                 </div>
               </div>
               <span className="text-xs font-mono font-bold px-2 py-1 bg-emerald-100 text-emerald-800 rounded">
-                85%
+                95%
               </span>
             </div>
 
-            {/* Network Protocol Fee (15%) */}
+            {/* Network Protocol Fee (5%) */}
             <div className="p-3.5 rounded-lg border border-slate-200 bg-white flex items-center justify-between">
               <div>
                 <div className="text-[11px] font-mono uppercase text-slate-500 font-semibold flex items-center gap-1">
                   <Percent className="w-3.5 h-3.5 text-slate-400" />
-                  <span>Network Escrow &amp; Verify Fee (15%)</span>
+                  <span>Forgent Fee (5%)</span>
                 </div>
                 <div className="text-lg font-bold font-mono text-slate-700 mt-1">
                   ${networkShareUsd.toFixed(2)}{" "}
@@ -210,7 +210,7 @@ export function StepTaskContract({ formData, onChange }: StepTaskContractProps) 
                 </div>
               </div>
               <span className="text-xs font-mono font-bold px-2 py-1 bg-slate-100 text-slate-600 rounded">
-                15%
+                5%
               </span>
             </div>
           </div>
@@ -222,7 +222,7 @@ export function StepTaskContract({ formData, onChange }: StepTaskContractProps) 
                 <tr>
                   <th className="py-1.5 px-3">Monthly Volume</th>
                   <th className="py-1.5 px-3">Gross Contract Spend</th>
-                  <th className="py-1.5 px-3 text-right">Creator Net (85%)</th>
+                  <th className="py-1.5 px-3 text-right">Creator Net (95%)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 bg-white">
