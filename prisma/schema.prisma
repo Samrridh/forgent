@@ -894,3 +894,45 @@ model BusinessBrief {
   @@index([organizationId, ownerId, createdAt])
   @@map("business_briefs")
 }
+
+// Hackathon marketplace listings and bypass orders; no real payment is recorded.
+model MarketplaceListing {
+  id          String             @id @default(cuid())
+  builderId   String
+  name        String
+  description String
+  category    String
+  endpointUrl String
+  inputSchema Json
+  outputSchema Json
+  review      Json
+  pricePaise  Int
+  status      String             @default("DRAFT")
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  orders      MarketplaceOrder[]
+
+  @@index([status, createdAt])
+  @@index([builderId, createdAt])
+  @@map("marketplace_listings")
+}
+
+model MarketplaceOrder {
+  id             String             @id @default(cuid())
+  listingId      String
+  buyerId        String
+  requestId      String
+  task           String
+  pricePaise     Int
+  paymentStatus  String             @default("DEMO_BYPASSED")
+  status         String             @default("PENDING")
+  result         Json?
+  errorCode      String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  listing        MarketplaceListing @relation(fields: [listingId], references: [id], onDelete: Restrict)
+
+  @@unique([buyerId, requestId])
+  @@index([buyerId, createdAt])
+  @@map("marketplace_orders")
+}

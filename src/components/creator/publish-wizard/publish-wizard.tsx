@@ -65,6 +65,14 @@ export function PublishWizard({ onCancel }: PublishWizardProps) {
         setValidationError("Input Schema and Output Format must be valid JSON.");
         return false;
       }
+    } else if (currentStep === 4) {
+      try {
+        const endpoint = new URL(formData.webhookUrl);
+        if (endpoint.protocol !== "https:" || endpoint.username || endpoint.password || endpoint.search || endpoint.hash) throw new Error();
+      } catch {
+        setValidationError("Enter a public HTTPS endpoint without credentials or query parameters.");
+        return false;
+      }
     }
     return true;
   };
@@ -146,13 +154,13 @@ export function PublishWizard({ onCancel }: PublishWizardProps) {
           <StepTaskContract formData={formData} onChange={updateFormData} />
         )}
         {currentStep === 4 && (
-          <section className="space-y-4"><div className="border-b border-border-subtle pb-4"><h3 className="text-base font-bold text-slate-900">Step 4: Execution endpoint</h3><p className="text-xs text-slate-500 mt-1">Endpoint configuration is not available for this static review demo.</p></div><div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">Your uploaded code is not deployed or executed. Endpoint integration and verification will require a separate implementation.</div></section>
+          <section className="space-y-4"><div className="border-b border-border-subtle pb-4"><h3 className="text-base font-bold text-slate-900">Step 4: Builder-hosted endpoint</h3><p className="text-xs text-slate-500 mt-1">Your service receives a POST request with a JSON task and returns a JSON result.</p></div><label className="block text-sm font-semibold text-slate-800">Public HTTPS endpoint<input className="form-input mt-2" type="url" value={formData.webhookUrl} onChange={(event) => updateFormData({ webhookUrl: event.target.value })} placeholder="https://your-agent.example/run" /></label><div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">Expected request: <code>{'{"task":"..."}'}</code>. Expected response: <code>{'{"result":"..."}'}</code>. Do not put credentials in the URL. The uploaded ZIP is not deployed.</div></section>
         )}
         <div hidden={currentStep !== 3}>
           <StepPackageReview key={JSON.stringify([formData.name, formData.bio, formData.inputSchema, formData.outputFormat])} formData={formData} onReviewChange={setReview} />
         </div>
         {currentStep === 5 && (
-          <StepReviewSummary report={review?.report || null} onBackToPackage={() => setCurrentStep(3)} />
+          <StepReviewSummary report={review?.report || null} formData={formData} onBackToPackage={() => setCurrentStep(3)} />
         )}
       </div>
 

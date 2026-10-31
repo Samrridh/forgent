@@ -3,9 +3,10 @@ import path from "node:path";
 import { randomUUID, createHash, randomBytes } from "node:crypto";
 import { z } from "zod";
 import { ArticleSchema, type DemoStore, type DemoKey } from "./contracts";
+import { DemoListingSchema } from "./demo-listing-contract";
 
 const keySchema = z.object({ id:z.string(), name:z.string(), prefix:z.string(), hash:z.string(), createdAt:z.string(), revokedAt:z.string().nullable() });
-const storeSchema = z.object({ version:z.literal(1), keys:z.array(keySchema), articles:z.array(ArticleSchema), runs:z.array(z.unknown()), handoffs:z.array(z.unknown()), agents:z.array(z.unknown()).default([]), discordStatus:z.unknown().optional() });
+const storeSchema = z.object({ version:z.literal(1), demoListings:z.array(DemoListingSchema).default([]), keys:z.array(keySchema), articles:z.array(ArticleSchema), runs:z.array(z.unknown()), handoffs:z.array(z.unknown()), agents:z.array(z.unknown()).default([]), discordStatus:z.unknown().optional() });
 const initialStore = (): DemoStore => ({ version: 1, keys: [], runs: [], handoffs: [], agents: [], articles: [
   { id: "getting-started", title: "Getting started with Northstar", content: "To invite your team, open Settings, select Members, and choose Invite member. Enter their email address and send the invitation. Invitations expire after seven days." },
   { id: "reset-password", title: "Reset your password", content: "To reset your password, open the sign-in page and select Forgot password. Enter your account email and follow the reset link. The link expires after one hour." },
