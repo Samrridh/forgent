@@ -8,6 +8,7 @@ import { MyAgentsTab } from "./my-agents-tab";
 import { PublishWizard } from "./publish-wizard/publish-wizard";
 import { EarningsCenter } from "./earnings/earnings-center";
 import { CreatorAnalyticsTab } from "./analytics/creator-analytics-tab";
+import { BuilderWorkspace } from "@/components/builder/builder-workspace";
 import {
   Boxes,
   PlusCircle,
@@ -17,9 +18,11 @@ import {
   FileCode,
   ShieldCheck,
   BarChart3,
+  ClipboardCheck,
+  UserRound,
 } from "lucide-react";
 
-export type CreatorStudioTab = "my-agents" | "analytics" | "publish" | "earnings";
+export type CreatorStudioTab = "my-agents" | "analytics" | "publish" | "earnings" | "package-review" | "profile";
 
 interface CreatorStudioProps {
   initialTab?: CreatorStudioTab;
@@ -54,16 +57,17 @@ export function CreatorStudio({ initialTab = "my-agents" }: CreatorStudioProps) 
       {/* Top Banner / Hero Header */}
       <section className="border-b border-border-default bg-surface-primary py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto space-y-4">
+          <p className="text-sm text-slate-600">Demo workspace: existing agent statistics and verification results are illustrative. Package review inspects source without executing it.</p>
           <div className="flex flex-wrap items-center gap-2">
             <span className="font-mono text-xs uppercase px-2.5 py-0.5 rounded bg-cobalt-50 text-cobalt-700 border border-cobalt-200">
-              Verified Creator Studio
+              Creator Studio Demo
             </span>
             <span className="font-mono text-xs uppercase px-2.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
               Builder Workspace
             </span>
             <span className="font-mono text-xs uppercase px-2.5 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Verification Harness Ready</span>
+              <span>Static Review Available</span>
             </span>
           </div>
 
@@ -73,7 +77,7 @@ export function CreatorStudio({ initialTab = "my-agents" }: CreatorStudioProps) 
                 Agent Creator Studio &amp; Payout Center
               </h1>
               <p className="text-sm text-slate-600 mt-1 max-w-2xl">
-                Deploy, verify, and monetize deterministic autonomous agents. Configure task contracts, run the 5-test verification suite, and withdraw revenue via instant UPI, Bank Wire, or Stripe.
+                Explore the builder workflow, describe an agent, and request a static package review. Statistics and payouts are illustrative.
               </p>
             </div>
 
@@ -168,6 +172,14 @@ export function CreatorStudio({ initialTab = "my-agents" }: CreatorStudioProps) 
               <Sparkles className="w-3.5 h-3.5" />
               <span>Publish Agent Wizard</span>
             </button>
+            <button type="button" onClick={() => setActiveTab("package-review")} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono font-semibold transition-colors shrink-0 ${activeTab === "package-review" ? "bg-cobalt-500 text-white shadow-xs" : "bg-surface-primary hover:bg-slate-100 text-slate-700 border border-slate-200"}`}>
+              <ClipboardCheck className="w-3.5 h-3.5" />
+              <span>Package Review</span>
+            </button>
+            <button type="button" onClick={() => setActiveTab("profile")} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono font-semibold transition-colors shrink-0 ${activeTab === "profile" ? "bg-cobalt-500 text-white shadow-xs" : "bg-surface-primary hover:bg-slate-100 text-slate-700 border border-slate-200"}`}>
+              <UserRound className="w-3.5 h-3.5" />
+              <span>Profile</span>
+            </button>
           </div>
         </div>
       </section>
@@ -192,6 +204,8 @@ export function CreatorStudio({ initialTab = "my-agents" }: CreatorStudioProps) 
         )}
 
         {activeTab === "earnings" && <EarningsCenter />}
+        <div hidden={activeTab !== "package-review"}><BuilderWorkspace embedded /></div>
+        {activeTab === "profile" && <section className="business-panel"><p className="business-kicker">BUILDER / PROFILE</p><h2>Demo builder</h2><p>This is a shared demo profile. Agent submissions, reviews, and account statistics are not saved.</p><p>Published agents: unavailable · Evaluations: unavailable</p></section>}
       </main>
     </div>
   );

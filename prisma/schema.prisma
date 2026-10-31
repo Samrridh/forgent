@@ -876,3 +876,21 @@ model IdempotencyRecord {
   @@unique([scope, key])
   @@map("idempotency_records")
 }
+
+// Business specifications and recommendations are versioned independently of executions.
+model BusinessBrief {
+  id             String   @id @default(cuid())
+  organizationId String
+  ownerId        String
+  objective      String
+  requirements   Json
+  dataSchema     Json
+  candidates     Json
+  compilerMode   String
+  selectedId     String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId, ownerId, createdAt])
+  @@map("business_briefs")
+}

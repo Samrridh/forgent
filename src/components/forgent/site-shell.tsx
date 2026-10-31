@@ -6,7 +6,7 @@ export function Mark() {
   return <Image width={32} height={32} className="brand-mark" src="/firefly.svg" alt="" aria-hidden="true" />;
 }
 export function SiteHeader() {
-  return <header className="site-header"><div className="nav-inner"><Link className="wordmark" href="/"><Mark /><span>forgent<span className="wordmark-dot">.</span></span></Link><nav aria-label="Main navigation" className="main-nav"><Link href="/agents">Explore agents</Link><Link href="/enterprise">Enterprise</Link><Link href="/pricing">Pricing</Link><Link href="/docs">Documentation</Link><Link href="/publish">For builders</Link></nav><div className="nav-actions"><Link href="/console" className="nav-console">Console <ArrowUpRight size={14}/></Link><Link href="/agents" className="button button-dark nav-cta">Explore agents <ArrowUpRight size={14}/></Link></div></div></header>;
+  return <header className="site-header"><div className="nav-inner"><Link className="wordmark" href="/"><Mark /><span>forgent<span className="wordmark-dot">.</span></span></Link><nav aria-label="Main navigation" className="main-nav"><Link href="/agents">Explore agents</Link><Link href="/enterprise">Enterprise</Link><Link href="/pricing">Pricing</Link><Link href="/docs">Documentation</Link><Link href="/publish">For builders</Link></nav><div className="nav-actions"><Link href="/login" className="nav-console">Demo sign in <ArrowUpRight size={14}/></Link><Link href="/agents" className="button button-dark nav-cta">Explore agents <ArrowUpRight size={14}/></Link></div></div></header>;
 }
 // Adapted from Watermelon UI Footer 1 (MIT): https://ui.watermelon.sh/block/footer-1
 interface FooterLink { label: string; href: string }
