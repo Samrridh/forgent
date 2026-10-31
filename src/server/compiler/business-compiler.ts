@@ -12,7 +12,7 @@ export async function compileBusinessRequest(input: BusinessRequest, agents: Com
   const questions = [!input.inputs && "What data will the workflow receive?", !input.outputs && "What output should the workflow produce?", !input.rules && "What business rules determine a correct result?", !input.constraints && "What actions or data access must be prohibited?"].filter((value): value is string => Boolean(value) && !answered.has(value as string));
   const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   let mode: "gemini" | "offline" = "offline";
-  let notices = ["Recommendations are untested. Declared schemas and permissions require review before execution."];
+  const notices = ["Recommendations are untested. Declared schemas and permissions require review before execution."];
   let candidates: CompilerOutput["candidates"] = [];
   if (key && agents.length) {
     try {
