@@ -11,7 +11,7 @@ export interface ExampleAgent {
   exampleOutput: string;
 }
 
-// Catalog previews only. These entries are never registered as runnable agents.
+// Catalog entries run as text-only demonstrations; integrations are not provided.
 export const exampleAgents: ExampleAgent[] = [
   { id:"example-invoice-extractor", name:"Invoice Extractor", category:"Data extraction", description:"Turn invoice documents into structured fields for your workflow.", overview:"A potential agent for extracting vendor, invoice number, line items, and totals from documents.", tags:["Invoices","Structured data","Finance"], exampleInput:"Extract the invoice number, vendor, and total from this invoice.", exampleOutput:"Invoice number, vendor name, date, line items, and total as structured data." },
   { id:"example-research-brief", name:"Research Brief", category:"Research", description:"Turn a collection of sources into a concise, cited briefing.", overview:"A potential agent for summarizing supplied research material and organizing its findings with citations.", tags:["Research","Summaries","Citations"], exampleInput:"Summarize these articles and highlight where their findings differ.", exampleOutput:"A short research brief with key findings and references to supplied sources." },

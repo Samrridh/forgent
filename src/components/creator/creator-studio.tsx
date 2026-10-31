@@ -48,7 +48,7 @@ export function CreatorStudio({ initialTab = "my-agents" }: CreatorStudioProps) 
   const handlePublishAgent = (newAgent: CreatorAgent) => {
     setAgents((prev) => [newAgent, ...prev]);
     setActiveTab("my-agents");
-    setPublishedSuccessMsg(`Published and verified "${newAgent.name}" on the Forgent network.`);
+    setPublishedSuccessMsg(`Added "${newAgent.name}" to this prototype session. It is not published to the local catalog.`);
     setTimeout(() => setPublishedSuccessMsg(null), 5000);
   };
 

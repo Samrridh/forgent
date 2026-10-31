@@ -1,4 +1,4 @@
-import { runnableProjectAgents } from "@/data/project-example-agents";
+import { exampleAgents } from "@/data/example-agents";
 import { runTextAgent } from "./text-agent";
 import { randomUUID } from "node:crypto";
 import { RunInputSchema, type DemoRun } from "./contracts";
@@ -17,7 +17,7 @@ export async function runAgent(secret:string, body:unknown, idempotencyKey:strin
     const previous=idempotencyKey && store.runs.find(r=>r.keyId===key.id && r.idempotencyKey===idempotencyKey);
     if(previous) { if(previous.requestHash!==requestHash) throw new GatewayError(409,"IDEMPOTENCY_CONFLICT","This idempotency key was already used for a different request."); return previous; }
     const start=Date.now();
-    const textAgent=runnableProjectAgents.find(a=>a.id===parsed.data.agent);
+    const textAgent=exampleAgents.find(a=>a.id===parsed.data.agent);
     const selected=parsed.data.agent === "knowledge-support" || textAgent ? null : store.agents.find(a=>a.id===parsed.data.agent&&a.status==="published");
     if(parsed.data.agent!=="knowledge-support"&&!selected&&!textAgent)throw new GatewayError(404,"AGENT_NOT_FOUND","The agent was not found or is not published.");
     if(textAgent && parsed.data.context) throw new GatewayError(400,"UNSUPPORTED_CONTEXT","Discord integration currently supports knowledge-base agents only.");

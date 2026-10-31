@@ -12,7 +12,7 @@ let directory:string;
 let key:string;
 const request=(question:string)=>({agent:"knowledge-support",input:{question}});
 beforeAll(async()=>{directory=await mkdtemp(path.join(os.tmpdir(),"forgent-gateway-"));process.env.FORGENT_DATA_DIR=directory;});
-beforeEach(async()=>{await rm(path.join(directory,"store.json"),{force:true});const created=newKey("Test key");key=created.secret;await withDemoStore(store=>{store.keys.push(created.key);},true);delete process.env.OPENROUTER_API_KEY;delete process.env.GEMINI_API_KEY;delete process.env.GOOGLE_GENERATIVE_AI_API_KEY;delete process.env.OPENAI_API_KEY;});
+beforeEach(async()=>{await rm(path.join(directory,"store.json"),{force:true});const created=newKey("Test key");key=created.secret;await withDemoStore(store=>{store.keys.push(created.key);},true);delete process.env.OPENROUTER_API_KEY;delete process.env.OPENROUTER_API_KEY;delete process.env.GEMINI_API_KEY;delete process.env.GOOGLE_GENERATIVE_AI_API_KEY;delete process.env.OPENAI_API_KEY;});
 afterEach(()=>{vi.restoreAllMocks();});
 afterAll(async()=>{delete process.env.FORGENT_DATA_DIR;await rm(directory,{recursive:true,force:true});});
 
@@ -49,6 +49,12 @@ describe("Forgent demo gateway",()=>{
   vi.spyOn(globalThis,"fetch").mockResolvedValue(new Response(JSON.stringify({choices:[{message:{content:JSON.stringify({action:"answer",answer:"Wrong.",sources:["unknown"]})}}]}),{status:200}));
   await expect(runAgent(key,request("How do I invite my team?"),null)).rejects.toMatchObject({code:"INVALID_MODEL_RESPONSE"});
   expect(await withDemoStore(store=>store.runs.length)).toBe(0);
+ });
+ it("runs a formerly preview-only catalog agent",async()=>{
+  process.env.OPENROUTER_API_KEY="test-only";
+  const fetchSpy=vi.spyOn(globalThis,"fetch").mockResolvedValue(new Response(JSON.stringify({choices:[{message:{content:"Draft review"}}]}),{status:200}));
+  const result=await runAgent(key,{agent:"example-code-review",input:{question:"Review this code."}},null);
+  expect(result.output).toEqual({action:"result",answer:"Draft review"});expect(fetchSpy).toHaveBeenCalledOnce();
  });
  it("exposes authenticated API responses without leaking stored key metadata",async()=>{
   const missing=await postRun(new NextRequest("http://localhost/api/v1/runs",{method:"POST",body:JSON.stringify(request("unrelated invoice"))}));

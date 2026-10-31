@@ -11,7 +11,17 @@ Forgent is being rebuilt as a single API for specialized agents. The current loc
 
 The application also exposes `GET /api/v1/agents` and `POST /api/v1/runs`; the latter accepts a bearer key and JSON such as `{"agent":"knowledge-support","input":{"question":"How do I invite my team?"}}`. An optional `Idempotency-Key` header avoids recording the same successful request twice. Responses distinguish an answer with source IDs from a handoff with a ticket ID. The API uses simulated billing and does not charge users.
 
+## Sponsor demos
+
+Open `/sponsor-demo` to run the Meko support handoff and view the IOMETE sales concept. The Meko example uses a fixed fictional refund question and an empty demo knowledge base. The first support agent creates a handoff; Forgent stores it as a Meko datapack artifact, reads it back, and sends the retrieved context to a second model-powered support agent for a draft. It does not resolve a real ticket or check a real refund policy.
+
+Create a Meko account, API key, and datapack with write access. Add `MEKO_API_KEY`, `MEKO_DATAPACK_ID`, and `OPENROUTER_API_KEY` to `.env.local`, then restart the server. See the [Meko datapack API](https://docs.mekodata.ai/reference/datapack-api/) for setup. The Meko artifact is visible to datapack members; use fictional data only. A missing key or service failure is shown in the demo, and no local result is presented as a successful Meko call.
+
+The IOMETE view is a static concept with fictional sales data and no IOMETE integration. Solana is deferred.
+
 ## Publish a support agent
+
+Use the same demo session to browse agents, open the business workspace, and use `/publish`; the main navigation no longer requires a persona switch. This is demo access, not a real unified account or authentication system. The publish workspace includes the previous Creator Studio under **Prototype tools**. Its sample agents, wizard, analytics, and payouts are separate simulations; they do not share the local catalog. Package review inspects source without executing it.
 
 Open `/publish` and use **Use the sample agent** to load a deterministic reference endpoint, or enter a public HTTPS endpoint you control. Save, run the 12-case support benchmark, then publish a passing version. The local sample requires no model key. Editing an agent invalidates its benchmark and returns it to draft. A published agent can be selected in the catalog or called by its ID through `/api/v1/runs`.
 
@@ -21,22 +31,12 @@ External agents receive the workspace articles when called. Public endpoints are
 
 ## Connect the Discord bot
 
-1. Create a bot application in the Discord Developer Portal. Install it in a **test server** with the `bot` and `applications.commands` scopes and permissions to view channels, send messages, and read message history. Create a support channel and a separate staff channel hidden from `@everyone`. Staff who use `/reply` need the Discord **Manage Messages** permission.
-2. In Forgent, create a dedicated API key and copy it immediately. Open the desired published agent listing and copy its agent ID. The sample Northstar agent works without a model provider key; the built-in Knowledge Support agent requires a model key for grounded answers.
-3. Add these variables to the ignored `.env.local` file. Do not paste tokens into chat or commit them:
+1. Create a bot in the Discord Developer Portal and invite it to a test server with the bot and applications.commands scopes, and permission to view channels, send messages, and read message history. Create a support channel and a separate staff channel hidden from @everyone. Staff need Manage Messages to use /reply.
+2. Add the bot token as `DISCORD_BOT_TOKEN` in the ignored `.env.local` file. The built-in Knowledge Support agent also needs `OPENROUTER_API_KEY` for grounded answers. Add your articles in Console → Knowledge base.
+3. Start `npm run dev`; in another terminal run `npm run discord:setup`. Choose the server, support channel, and private staff channel. The guided command creates a Forgent demo key, chooses the built-in support agent, and starts the bot. If the bot is not invited, the command prints an invite link. Keep both terminals running.
+4. Mention the bot in the support channel. If the knowledge base cannot answer, it creates a handoff and posts its ticket ID to the staff channel. A staff member can use `/reply ticket:<full-ticket-id> message:<response>` to respond and resolve the handoff.
 
-   ```dotenv
-   DISCORD_BOT_TOKEN=your_bot_token
-   DISCORD_GUILD_ID=your_server_id
-   DISCORD_SUPPORT_CHANNEL_ID=your_support_channel_id
-   DISCORD_STAFF_CHANNEL_ID=your_private_staff_channel_id
-   DISCORD_AGENT_ID=your_published_agent_id
-   FORGENT_API_KEY=your_forgent_api_key
-   ```
-
-4. Keep `npm run dev` running, then start `npm run discord:bot` in a second terminal. The console’s Discord tab reports the last bot heartbeat. Mention the bot with a question in the support channel. When it cannot answer, it creates a handoff and posts its ticket ID to the staff channel. A staff member can use `/reply ticket:<full-ticket-id> message:<response>` there; the bot sends the response to the original Discord message and then resolves the handoff.
-
-The bot only processes mentions in the configured support channel and ignores bot messages. It requires an active Forgent API key and checks the staff channel is not visible to `@everyone`. The bot and website must both be running. If sending or resolving a reply fails, the ticket remains visible in the console; check the original Discord message before retrying because message delivery and local status updates are separate operations. The bot is configured for a local test workspace, not a public production deployment.
+Each guided start creates a local demo API key; revoke unused keys in Console → API keys. The bot only processes mentions in the selected support channel. If sending or resolving a reply fails, check the ticket and original Discord message before retrying. This is a single local test workspace, not a hosted multi-customer integration. The older `npm run discord:bot` command remains available for manually configured environments.
 
 ## Demo usage accounting
 

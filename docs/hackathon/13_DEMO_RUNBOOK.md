@@ -1,5 +1,7 @@
 # 13 — Demo Runbook
 
+> Historical prototype runbook. For the current sponsor walkthrough, open `/sponsor-demo`: run the Meko handoff with the credentials documented in the root README, then show the fictional IOMETE sales concept. The workflow below describes the previous prototype.
+
 **Status:** `ACCEPTED — PRODUCTION VERIFIED RUNBOOK`  
 **Owner:** Team A (delivery), B (environment/reset), C (technical chain)  
 **Demo length:** target **3:00**, hard ceiling **3:15**  

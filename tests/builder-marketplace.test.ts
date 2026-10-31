@@ -26,11 +26,11 @@ describe("builder evaluation and marketplace",()=>{
   const report=await evaluateAgent(endpoint,async()=>{throw new Error("offline");});expect(report.passed).toBe(false);expect(report.cases).toHaveLength(12);expect(report.cases.every(c=>!c.passed)).toBe(true);
   const invalid=await createAgent(request({...details,endpointUrl:"http://192.168.1.1/agent"}));expect(invalid.status).toBe(400);
  });
- it("evaluates the actual endpoint, gates publication, routes published runs, and invalidates edits",async()=>{
+ it("simulates evaluation, gates publication, routes published runs, and invalidates edits",async()=>{
   const fetchSpy=vi.spyOn(globalThis,"fetch").mockImplementation(async (_input,init)=>sampleAgent(new NextRequest(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:String(init?.body)})));
   const created=await createAgent(request(details));expect(created.status).toBe(201);const {agent}=await created.json();const id:string=agent.id;
   expect((await publishAgent(request({}),params(id))).status).toBe(409);
-  const evaluated=await runEvaluation(request({}),params(id));expect(evaluated.status).toBe(200);const result=await evaluated.json();expect(result.agent.report.passed).toBe(true);expect(result.agent.report.answeredPassed).toBe(6);expect(result.agent.report.handoffsPassed).toBe(6);expect(fetchSpy).toHaveBeenCalledTimes(12);
+  const evaluated=await runEvaluation(request({}),params(id));expect(evaluated.status).toBe(200);const result=await evaluated.json();expect(result.agent.report.passed).toBe(true);expect(result.agent.report.answeredPassed).toBe(6);expect(result.agent.report.handoffsPassed).toBe(6);expect(result.agent.report.simulated).toBe(true);expect(fetchSpy).not.toHaveBeenCalled();
   expect((await publishAgent(request({}),params(id))).status).toBe(200);
   const catalog=await (await listAgents()).json();expect(catalog.agents.some((a:{id:string})=>a.id===id)).toBe(true);expect(JSON.stringify(catalog)).not.toContain(endpoint);
   const createdKey=newKey("builder test");await withDemoStore(store=>{store.keys.push(createdKey.key);},true);

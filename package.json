@@ -21,7 +21,8 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
-    "db:reset": "tsx prisma/reset.ts"
+    "db:reset": "tsx prisma/reset.ts",
+    "discord:setup": "tsx src/discord/discord-setup.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",

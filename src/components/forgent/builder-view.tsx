@@ -1,19 +1,35 @@
 "use client";
 import { useState } from "react";
-import { ArrowRight, Code2, FileCheck2, UploadCloud, UserRound } from "lucide-react";
-import { ForgentHero2 } from "@/components/watermelon-ui/forgent-heroes";
+import Link from "next/link";
+import { ArrowRight, Code2, Compass, FileCode2, LayoutDashboard, UploadCloud, UserRound, Wrench } from "lucide-react";
 import { HostedPackageForm } from "./hosted-package-form";
 import { BuilderProfileForm } from "./builder-profile-form";
 import { PreviewNote } from "./ui";
+import { CreatorStudio } from "@/components/creator/creator-studio";
 
-type BuilderTab = "upload" | "agents" | "profile";
-const tabs: {id:BuilderTab;label:string;description:string;icon:typeof UploadCloud}[] = [
- {id:"upload",label:"Submit an agent",description:"Add a package",icon:UploadCloud},
- {id:"agents",label:"Your agents",description:"Evaluate and publish",icon:Code2},
- {id:"profile",label:"Builder profile",description:"Introduce yourself",icon:UserRound},
-];
+type BuilderTab = "overview" | "upload" | "agents" | "profile" | "studio";
+const tabs = [
+ {id:"overview",label:"Overview",icon:LayoutDashboard},
+ {id:"upload",label:"Submit an agent",icon:UploadCloud},
+ {id:"agents",label:"Your agents",icon:Code2},
+ {id:"profile",label:"Builder profile",icon:UserRound},
+ {id:"studio",label:"Prototype tools",icon:Wrench},
+] as const;
 export function BuilderView(){
- const [tab,setTab]=useState<BuilderTab>("upload");
- function handleKeys(event:React.KeyboardEvent<HTMLButtonElement>,index:number){if(!["ArrowLeft","ArrowRight","Home","End"].includes(event.key))return;event.preventDefault();const next=event.key==="Home"?0:event.key==="End"?tabs.length-1:(index+(event.key==="ArrowRight"?1:-1)+tabs.length)%tabs.length;setTab(tabs[next].id);document.getElementById(`builder-tab-${tabs[next].id}`)?.focus()}
- return <><ForgentHero2/><div className="page-width inner-page builder-page"><PreviewNote>Upload the sample support package to create a local draft. The runtime is built in; arbitrary code is not supported. Billing is simulated.</PreviewNote><div className="builder-steps"><div><span>01</span><UploadCloud size={20}/><h3>Share your agent</h3><p>Upload the sample manifest package; its runtime defines the interface.</p></div><div><span>02</span><FileCheck2 size={20}/><h3>Evaluate the service</h3><p>Run universal checks and task-specific cases before listing.</p></div><div><span>03</span><Code2 size={20}/><h3>Publish on Forgent</h3><p>Customers discover your service through one API.</p></div></div><section id="submit" className="builder-workspace"><div className="builder-workspace-heading"><div><span className="content-kicker">BUILDER WORKSPACE</span><h2>Everything in one place.</h2><p>Submit your agent, review its results, and create your profile.</p></div><a className="text-link" href="/samples/support-agent.zip" download>Download sample ZIP <ArrowRight size={15}/></a></div><div className="builder-tabs" role="tablist" aria-label="Builder workspace">{tabs.map((item,index)=>{const Icon=item.icon;return <button key={item.id} id={`builder-tab-${item.id}`} role="tab" aria-selected={tab===item.id} aria-controls={`builder-panel-${item.id}`} tabIndex={tab===item.id?0:-1} className={`builder-tab ${tab===item.id?"is-active":""}`} onClick={()=>setTab(item.id)} onKeyDown={event=>handleKeys(event,index)}><span className="builder-tab-icon"><Icon size={19}/></span><span><strong>{item.label}</strong><small>{item.description}</small></span></button>})}</div><div className="builder-tab-content"><HostedPackageForm activeTab={tab} onShowAgents={()=>setTab("agents")}/><div id="builder-panel-profile" role="tabpanel" aria-labelledby="builder-tab-profile" hidden={tab!=="profile"}><BuilderProfileForm/></div></div></section></div></>;
+ const [tab,setTab]=useState<BuilderTab>("overview");
+ return <div id="submit" className="enterprise-dashboard builder-dashboard page-width">
+  <aside className="enterprise-dashboard-sidebar" aria-label="Builder workspace navigation">
+   <div className="enterprise-dashboard-brand"><span className="enterprise-dashboard-mark"><Code2 size={18}/></span><div><strong>Builder</strong><small>DEMO WORKSPACE</small></div></div>
+   <span className="enterprise-dashboard-label">WORKSPACE</span><nav>{tabs.map(({id,label,icon:Icon})=><button id={`builder-tab-${id}`} key={id} type="button" aria-current={tab===id?"page":undefined} onClick={()=>setTab(id)}><Icon size={17}/>{label}</button>)}</nav>
+   <span className="enterprise-dashboard-label">QUICK LINKS</span><nav><Link href="/agents"><Compass size={17}/>Explore agents</Link><a href="/samples/support-agent.zip" download><FileCode2 size={17}/>Sample package</a></nav>
+  </aside>
+  <div className="enterprise-dashboard-main"><div className="enterprise-dashboard-top"><span>BUILDER / {tabs.find(item=>item.id===tab)?.label.toUpperCase()}</span><span>LOCAL DEMO</span></div>
+   {tab==="overview"&&<section className="enterprise-dashboard-overview"><div className="enterprise-dashboard-heading"><div><p className="business-kicker">YOUR WORKSPACE</p><h1>Build and share an agent.</h1><p>Submit a support package, review its demo evaluation, and publish it to the local catalog.</p></div><button className="business-primary" onClick={()=>setTab("upload")}><UploadCloud size={16}/> Submit an agent</button></div>
+    <div className="enterprise-dashboard-summary"><article><span>01 / SUBMIT</span><UploadCloud size={21}/><h2>Share a package</h2><p>Upload the sample manifest to create an agent draft.</p><button onClick={()=>setTab("upload")}>Submit an agent <ArrowRight size={15}/></button></article><article><span>02 / MANAGE</span><Code2 size={21}/><h2>Review your agents</h2><p>Run a simulated evaluation and publish an eligible draft.</p><button onClick={()=>setTab("agents")}>View your agents <ArrowRight size={15}/></button></article><article><span>03 / EXPLORE</span><Wrench size={21}/><h2>Prototype tools</h2><p>Explore static package review and illustrative builder analytics.</p><button onClick={()=>setTab("studio")}>Open tools <ArrowRight size={15}/></button></article></div>
+    <div className="enterprise-dashboard-note"><strong>About this workspace</strong><p>The local demo accepts a manifest for the built-in support runtime. Arbitrary code is not executed, and billing is simulated.</p></div></section>}
+   <div className="builder-dashboard-content" hidden={tab!=="upload"&&tab!=="agents"}><HostedPackageForm activeTab={tab==="agents"?"agents":"upload"} onShowAgents={()=>setTab("agents")}/></div>
+   <div className="builder-dashboard-content" hidden={tab!=="profile"}><BuilderProfileForm/></div>
+   {tab==="studio"&&<div className="builder-dashboard-content"><PreviewNote>Prototype tools use separate sample data. The wizard does not publish to the local catalog; payouts and analytics are simulated.</PreviewNote><CreatorStudio/></div>}
+  </div>
+ </div>;
 }

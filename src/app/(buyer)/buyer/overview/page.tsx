@@ -1,5 +1,5 @@
-import { BusinessDashboard } from "@/components/business/business-dashboard";
+import { redirect } from "next/navigation";
 
 export default function BuyerOverviewPage() {
-  return <BusinessDashboard />;
+  redirect("/enterprise#workspace");
 }

@@ -5,7 +5,10 @@ import { PrismaNeon } from "@prisma/adapter-neon";
 describe("P1-B-001: Prisma Schema Model Reflection Suite", () => {
   it("reflects all domain models in Prisma.ModelName enum", () => {
     const models = Object.keys(Prisma.ModelName);
-    expect(models).toHaveLength(40);
+    expect(models).toHaveLength(43);
+    expect(models).toContain("BusinessBrief");
+    expect(models).toContain("MarketplaceListing");
+    expect(models).toContain("MarketplaceOrder");
     expect(models).toContain("SystemHealth");
     expect(models).toContain("User");
     expect(models).toContain("Account");

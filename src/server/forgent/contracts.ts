@@ -17,7 +17,7 @@ export interface DemoBilling { priceMicros:number; grossNanos:number; platformNa
 export interface DemoRun { billing?:DemoBilling; id: string; keyId: string; agent: string; question: string; output: AgentOutput; ticketId: string | null; latencyMs: number; createdAt: string; idempotencyKey: string | null; requestHash: string }
 export interface Handoff { keyId?:string; discord?:DiscordContext; id: string; question: string; reason: string; status: "open" | "resolved"; reply: string | null; createdAt: string }
 export interface EvaluationCase { id:string; name:string; passed:boolean; detail:string; latencyMs:number }
-export interface EvaluationReport { testedAt:string; passed:boolean; cases:EvaluationCase[]; answeredPassed:number; handoffsPassed:number }
+export interface EvaluationReport { simulated?:boolean; testedAt:string; passed:boolean; cases:EvaluationCase[]; answeredPassed:number; handoffsPassed:number }
 export interface BuilderAgent { id:string; name:string; description:string; endpointUrl:string; runtime?:"knowledge-support-v1"; priceMicros:number; version:number; status:"draft"|"passed"|"failed"|"published"; report:EvaluationReport|null; createdAt:string }
 export interface DiscordStatus { guildId:string; supportChannelId:string; staffChannelId:string; agentId:string; lastSeenAt:string }
 export interface DemoStore { demoListings?: DemoListing[]; discordStatus?:DiscordStatus|null; agents:BuilderAgent[]; version: 1; keys: DemoKey[]; articles: Article[]; runs: DemoRun[]; handoffs: Handoff[] }
