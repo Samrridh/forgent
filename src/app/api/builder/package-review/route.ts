@@ -31,8 +31,8 @@ export async function POST(request: NextRequest) {
   const denied = rejectCrossOrigin(request);
   if (denied) return denied;
   if (Number(request.headers.get("content-length") || 0) > 1200000) return NextResponse.json({ error: "Upload exceeds the size limit." }, { status: 413 });
-  const key = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-  if (!key) return NextResponse.json({ error: "Gemini is not configured on the server." }, { status: 503 });
+  const key = process.env.OPENROUTER_API_KEY?.trim();
+  if (!key) return NextResponse.json({ error: "OpenRouter is not configured on the server." }, { status: 503 });
   let payload: { name: string; description: string; inputSchema: unknown; outputSchema: unknown; files: { path: string; content: string }[] };
   try {
     const form = await request.formData();
@@ -49,13 +49,13 @@ export async function POST(request: NextRequest) {
     try { if (HostedManifestSchema.safeParse(JSON.parse(payload.files[0].content)).success) hostedRuntime = "knowledge-support-v1"; } catch { /* Not a supported manifest. */ }
   }
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(process.env.GEMINI_MODEL || "gemini-2.5-flash")}:generateContent`, {
-      method: "POST", headers: { "Content-Type": "application/json", "x-goog-api-key": key }, signal: AbortSignal.timeout(45000),
-      body: JSON.stringify({ systemInstruction: { parts: [{ text: packageReviewPrompt(Boolean(hostedRuntime)) }] }, contents: [{ role: "user", parts: [{ text: JSON.stringify({ ...payload, evaluator: { input: { task: "string" }, output: { result: "string" }, comparison: "exact" }, ...(hostedRuntime ? { platformSampleFixtures: HOSTED_SAMPLE_CASES } : {}) }) }] }], generationConfig: { responseMimeType: "application/json", responseJsonSchema, temperature: 0.2 } }),
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(45000),
+      body: JSON.stringify({ model: "openrouter/free", messages: [{ role: "system", content: packageReviewPrompt(Boolean(hostedRuntime)) }, { role: "user", content: JSON.stringify({ ...payload, responseSchema: responseJsonSchema, evaluator: { input: { task: "string" }, output: { result: "string" }, comparison: "exact" }, ...(hostedRuntime ? { platformSampleFixtures: HOSTED_SAMPLE_CASES } : {}) }) }], response_format: { type: "json_object" }, temperature: 0.2 }),
     });
     if (!response.ok) throw new Error("provider error");
-    const envelope = z.object({ candidates: z.array(z.object({ content: z.object({ parts: z.array(z.object({ text: z.string().optional() })) }) })).min(1) }).parse(await response.json());
-    const report = PackageReviewSchema.parse(JSON.parse(envelope.candidates[0].content.parts.map((part) => part.text || "").join("")));
+    const envelope = z.object({ choices: z.array(z.object({ message: z.object({ content: z.string() }) })).min(1) }).parse(await response.json());
+    const report = PackageReviewSchema.parse(JSON.parse(envelope.choices[0].message.content));
     return NextResponse.json({ report, filesReviewed: payload.files.map((file) => file.path), evaluatedAt: new Date().toISOString(), hostedRuntime });
   } catch {
     return NextResponse.json({ error: "The review service could not produce a valid report. Please try again." }, { status: 502 });

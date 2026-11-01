@@ -4,11 +4,14 @@ import { db } from "@/server/db";
 import { MarketplaceOrderInputSchema } from "@/server/forgent/marketplace-contracts";
 import { invokeHostedTask } from "@/server/forgent/hosted-task-agent";
 import { rejectCrossOrigin } from "@/server/forgent/console-request";
+import { isLocalMarketplace } from "@/server/forgent/local-marketplace";
+import { listLocalOrders, runLocalOrder } from "@/server/forgent/local-marketplace-orders";
 
 export const dynamic = "force-dynamic";
 export async function GET() {
   if (process.env.NODE_ENV === "production") return NextResponse.json({ error: "Demo orders are disabled in production." }, { status: 503 });
   try {
+    if (isLocalMarketplace()) return NextResponse.json({ orders: await listLocalOrders() });
     const orders = await db.marketplaceOrder.findMany({ where: { buyerId: "demo-individual" }, include: { listing: { select: { name: true } } }, orderBy: { createdAt: "desc" }, take: 100 });
     return NextResponse.json({ orders });
   } catch { return NextResponse.json({ error: "Marketplace storage is unavailable." }, { status: 503 }); }
@@ -21,6 +24,7 @@ export async function POST(request: NextRequest) {
   const { listingId, requestId, task } = parsed.data;
   const buyerId = "demo-individual";
   try {
+    if (isLocalMarketplace()) return await runLocalOrder(parsed.data);
     const listing = await db.marketplaceListing.findFirst({ where: { id: listingId, status: "PUBLISHED" } });
     if (!listing) return NextResponse.json({ error: "Agent not found." }, { status: 404 });
     let order;

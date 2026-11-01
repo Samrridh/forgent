@@ -214,7 +214,7 @@ export async function arbitrateDispute(
   dispute.status = "ARBITRATING";
   dispute.updatedAt = now;
 
-  const geminiKey = process.env.GEMINI_API_KEY;
+  const geminiKey = process.env.OPENROUTER_API_KEY?.trim();
   let verdict: DisputeVerdict = "REFUND_BUYER";
   let refundPercentage = 100;
   let reasoning = "";
@@ -251,24 +251,19 @@ export async function arbitrateDispute(
       });
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+        "https://openrouter.ai/api/v1/chat/completions",
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${geminiKey}` },
           body: JSON.stringify({
-            contents: [{ role: "user", parts: [{ text: userContent }] }],
-            systemInstruction: { parts: [{ text: oracleSystemPrompt }] },
-            generationConfig: {
-              temperature: 0.1,
-              responseMimeType: "application/json",
-            },
+            model: "openrouter/free", messages: [{ role: "system", content: oracleSystemPrompt }, { role: "user", content: userContent }], temperature: 0.1, response_format: { type: "json_object" },
           }),
         }
       );
 
       if (response.ok) {
         const data = await response.json();
-        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        const text = data?.choices?.[0]?.message?.content;
         if (text) {
           const parsed = JSON.parse(text);
           if (
@@ -278,8 +273,8 @@ export async function arbitrateDispute(
           ) {
             verdict = parsed.verdict;
             refundPercentage = Number(parsed.refundPercentage) || (verdict === "REFUND_BUYER" ? 100 : 0);
-            reasoning = String(parsed.reasoning || "Arbitration concluded under Gemini Oracle review.");
-            arbiterModel = "gemini-1.5-flash-oracle";
+            reasoning = String(parsed.reasoning || "Arbitration concluded under OpenRouter review.");
+            arbiterModel = "openrouter/free";
           }
         }
       }
@@ -288,7 +283,7 @@ export async function arbitrateDispute(
     }
   }
 
-  // Deterministic evaluation fallback if Gemini did not resolve
+  // Deterministic evaluation fallback if OpenRouter did not resolve
   if (arbiterModel === "deterministic-oracle-v1" && !hashTampered) {
     if (dispute.category === "SCHEMA_FAILURE") {
       verdict = "REFUND_BUYER";

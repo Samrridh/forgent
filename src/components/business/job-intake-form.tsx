@@ -3,6 +3,7 @@
 import { ArrowRight, FileCode2, LockKeyhole } from "lucide-react";
 import type { FormEvent } from "react";
 import styles from "./job-intake-form.module.css";
+import { CandidateProgress } from "./candidate-progress";
 
 type Details = { inputs: string; outputs: string; rules: string; constraints: string };
 const fields: { key: keyof Details; label: string; hint: string; placeholder: string }[] = [
@@ -26,8 +27,9 @@ export function JobIntakeForm({ objective, setObjective, details, setDetails, sc
       <div className={styles.fieldGrid}>{fields.map(({ key, label, hint, placeholder }) => <label className={styles.field} key={key}><span className={styles.label}>{label}</span><span className={styles.hint}>{hint}</span><textarea maxLength={2000} value={details[key]} onChange={(event) => setDetails({ ...details, [key]: event.target.value })} placeholder={placeholder} rows={4} /></label>)}</div>
       <div className={styles.sectionHeading}><div><span className={styles.sectionNumber}>03</span><h3>Data structure</h3><p>Share a schema if it helps explain your data.</p></div><span className={styles.optional}>OPTIONAL</span></div>
       <label className={styles.upload}><FileCode2 size={21} aria-hidden="true" /><span><strong>{schema ? "Schema added" : "Add a Prisma schema"}</strong><small>.prisma file · up to 200 KB</small></span><span className={styles.uploadAction}>Choose file</span><input type="file" accept=".prisma" onChange={async (event) => { const file = event.target.files?.[0]; if (!file) { setSchema(""); return; } if (file.size > 200000) { setError("Schema exceeds the 200 KB limit."); event.target.value = ""; setSchema(""); return; } setError(""); setSchema(await file.text()); }} /></label>
-      <div className={styles.privacy}><LockKeyhole size={16} aria-hidden="true" /><p>Your schema is parsed without connecting to your database. Its model descriptions and your answers may be sent to Gemini. Do not include secrets or real customer data.</p></div>
+      <div className={styles.privacy}><LockKeyhole size={16} aria-hidden="true" /><p>Your schema is parsed without connecting to your database. Its model descriptions and your answers may be sent to OpenRouter. Do not include secrets or real customer data.</p></div>
       {error && <p className={styles.error} role="alert">{error}</p>}
+      {loading && <CandidateProgress />}
       <div className={styles.actions}><button type="submit" disabled={loading}>{loading ? "Preparing candidates…" : "Find candidates"}<ArrowRight size={16} aria-hidden="true" /></button><span>Next: review your options</span></div>
     </form>
   </section>;

@@ -50,11 +50,7 @@ export function getApiKeys(): {
   geminiKey?: string;
 } {
   const openaiKey = process.env.OPENAI_API_KEY || env.OPENAI_API_KEY;
-  const geminiKey =
-    process.env.GEMINI_API_KEY ||
-    env.GEMINI_API_KEY ||
-    process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
-    env.GOOGLE_GENERATIVE_AI_API_KEY;
+  const geminiKey = process.env.OPENROUTER_API_KEY;
 
   return {
     openaiKey: openaiKey && openaiKey.trim() !== "" ? openaiKey.trim() : undefined,
@@ -80,7 +76,7 @@ export function buildSystemPrompt(agentSlug: string, agentTitle: string, agentDe
 }
 
 /**
- * Executes a task using a live LLM backend (OpenAI or Google Gemini).
+ * Executes a task using a live LLM backend (OpenAI or OpenRouter).
  * If no API key is configured, returns an explicit clear diagnostic failure.
  */
 export async function executeAgentTask(params: ExecutorInput): Promise<ExecutionResult> {
@@ -107,18 +103,18 @@ export async function executeAgentTask(params: ExecutorInput): Promise<Execution
 
   // Diagnostic failure gate if keys are missing
   if (!openaiKey && !geminiKey) {
-    addLog("API_KEY_CHECK_FAILED", "Neither OPENAI_API_KEY nor GEMINI_API_KEY found in environment");
+    addLog("API_KEY_CHECK_FAILED", "Neither OPENAI_API_KEY nor OPENROUTER_API_KEY found in environment");
     return {
       success: false,
       jobId,
       agentSlug,
       error: "MISSING_API_KEY",
       message:
-        "Execution failed: No valid API key found. Please set OPENAI_API_KEY or GEMINI_API_KEY in environment variables.",
+        "Execution failed: No valid API key found. Please set OPENAI_API_KEY or OPENROUTER_API_KEY in environment variables.",
       diagnostic: {
         openaiConfigured: false,
         geminiConfigured: false,
-        hint: "Provide an OPENAI_API_KEY or GEMINI_API_KEY in your .env configuration to execute live model inferences.",
+        hint: "Provide an OPENAI_API_KEY or OPENROUTER_API_KEY in your .env configuration to execute live model inferences.",
       },
       systemPrompt,
       executionLogs: logs,
@@ -127,21 +123,18 @@ export async function executeAgentTask(params: ExecutorInput): Promise<Execution
 
   const startTime = Date.now();
 
-  // Route 1: Google Gemini Execution
+  // Route 1: OpenRouter Execution
   if (geminiKey) {
-    addLog("DISPATCH_GEMINI", "Dispatching request to Google Gemini API (gemini-1.5-flash)");
+    addLog("DISPATCH_GEMINI", "Dispatching request to OpenRouter API (openrouter/free)");
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`;
+      const url = "https://openrouter.ai/api/v1/chat/completions";
       const response = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${geminiKey}` },
         body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-          systemInstruction: { parts: [{ text: systemPrompt }] },
-          generationConfig: {
-            temperature: 0.2,
-            responseMimeType: "application/json",
-          },
+          model: "openrouter/free",
+          messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }],
+          temperature: 0.2, response_format: { type: "json_object" },
         }),
       });
 
@@ -149,21 +142,21 @@ export async function executeAgentTask(params: ExecutorInput): Promise<Execution
 
       if (!response.ok) {
         const errorText = await response.text();
-        addLog("GEMINI_ERROR", `Gemini API returned HTTP ${response.status}: ${errorText}`);
+        addLog("GEMINI_ERROR", `OpenRouter API returned HTTP ${response.status}: ${errorText}`);
         return {
           success: false,
           jobId,
           agentSlug,
           error: `GEMINI_HTTP_${response.status}`,
-          message: `Gemini execution failed with HTTP ${response.status}: ${errorText}`,
+          message: `OpenRouter execution failed with HTTP ${response.status}: ${errorText}`,
           systemPrompt,
           executionLogs: logs,
         };
       }
 
       const json = await response.json();
-      const rawText = json?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-      const tokensUsed = json?.usageMetadata?.totalTokenCount || 0;
+      const rawText = json?.choices?.[0]?.message?.content || "{}";
+      const tokensUsed = json?.usage?.total_tokens || 0;
 
       let structuredJson: Record<string, unknown> = {};
       try {
@@ -172,13 +165,13 @@ export async function executeAgentTask(params: ExecutorInput): Promise<Execution
         structuredJson = { rawOutput: rawText };
       }
 
-      addLog("EXECUTION_COMPLETED", `Gemini generation completed in ${latencyMs}ms (${tokensUsed} tokens)`);
+      addLog("EXECUTION_COMPLETED", `OpenRouter generation completed in ${latencyMs}ms (${tokensUsed} tokens)`);
 
       return {
         success: true,
         jobId,
         agentSlug,
-        modelUsed: "gemini-1.5-flash",
+        modelUsed: "openrouter/free",
         latencyMs,
         tokensUsed,
         systemPrompt,
@@ -191,13 +184,13 @@ export async function executeAgentTask(params: ExecutorInput): Promise<Execution
       };
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err);
-      addLog("NETWORK_ERROR", `Gemini network error: ${errMsg}`);
+      addLog("NETWORK_ERROR", `OpenRouter network error: ${errMsg}`);
       return {
         success: false,
         jobId,
         agentSlug,
         error: "NETWORK_ERROR",
-        message: `Network communication failure with Gemini API: ${errMsg}`,
+        message: `Network communication failure with OpenRouter API: ${errMsg}`,
         systemPrompt,
         executionLogs: logs,
       };

@@ -158,3 +158,5 @@ track/
 .test-tmp/
 .neon
 .next-dev-*/
+.vercel
+.env*

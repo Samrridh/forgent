@@ -17,7 +17,7 @@ export const CompilerAgentSchema = z.object({
   latencyMs: z.number().int().nonnegative(), inputSchema: z.unknown().nullable(), outputSchema: z.unknown().nullable(),
 });
 export type CompilerAgent = z.infer<typeof CompilerAgentSchema>;
-export const GeminiRecommendationSchema = z.strictObject({
+export const OpenRouterRecommendationSchema = z.strictObject({
   questions: z.array(z.string().trim().min(1).max(500)).max(8),
   candidates: z.array(z.strictObject({
     title: z.string().trim().min(1).max(120),
@@ -35,7 +35,7 @@ export const CompilerOutputSchema = z.object({
   questions: z.array(z.string()),
   candidates: z.array(CandidateSchema),
   agents: z.array(CompilerAgentSchema),
-  mode: z.enum(["gemini", "offline"]),
+  mode: z.enum(["openrouter", "offline"]),
   notices: z.array(z.string()),
 });
 export type CompilerOutput = z.infer<typeof CompilerOutputSchema>;

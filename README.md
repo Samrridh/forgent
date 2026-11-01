@@ -11,6 +11,10 @@ Forgent is being rebuilt as a single API for specialized agents. The current loc
 
 The application also exposes `GET /api/v1/agents` and `POST /api/v1/runs`; the latter accepts a bearer key and JSON such as `{"agent":"knowledge-support","input":{"question":"How do I invite my team?"}}`. An optional `Idempotency-Key` header avoids recording the same successful request twice. Responses distinguish an answer with source IDs from a handoff with a ticket ID. The API uses simulated billing and does not charge users.
 
+When `DATABASE_URL` is absent in local development, hosted marketplace listings and demo orders persist in `.forgent-demo/marketplace.json`. This is a single-process demo store, not a production database. When a database URL is configured, the marketplace uses PostgreSQL and reports connection or schema failures rather than switching stores; local and database listings are separate.
+
+On Vercel, the shared demo workspace uses a PostgreSQL table instead of local files. It remains a single shared demo workspace, not per-user authentication. The database account needs permission to create the `forgent_demo_workspace` table on first use.
+
 ## Sponsor demos
 
 Open `/sponsor-demo` to run the Meko support handoff and view the IOMETE sales concept. The Meko example uses a fixed fictional refund question and an empty demo knowledge base. The first support agent creates a handoff; Forgent stores it as a Meko datapack artifact, reads it back, and sends the retrieved context to a second model-powered support agent for a draft. It does not resolve a real ticket or check a real refund policy.
@@ -37,6 +41,8 @@ External agents receive the workspace articles when called. Public endpoints are
 4. Mention the bot in the support channel. If the knowledge base cannot answer, it creates a handoff and posts its ticket ID to the staff channel. A staff member can use `/reply ticket:<full-ticket-id> message:<response>` to respond and resolve the handoff.
 
 Each guided start creates a local demo API key; revoke unused keys in Console → API keys. The bot only processes mentions in the selected support channel. If sending or resolving a reply fails, check the ticket and original Discord message before retrying. This is a single local test workspace, not a hosted multi-customer integration. The older `npm run discord:bot` command remains available for manually configured environments.
+
+The bot is a long-running process and does not run inside Vercel. To connect the local bot to a deployed Forgent app, set `FORGENT_BASE_URL` to that app's HTTPS URL in `.env.local` before running `npm run discord:setup`. Keep that terminal running.
 
 ## Demo usage accounting
 

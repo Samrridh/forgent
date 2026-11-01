@@ -1,0 +1,6 @@
+.env*
+.forgent-demo/
+.test-tmp/
+.next*/
+node_modules/
+.git/

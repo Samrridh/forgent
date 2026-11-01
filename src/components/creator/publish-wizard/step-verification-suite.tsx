@@ -232,7 +232,7 @@ export function StepVerificationSuite({
             Step 4: AI-Driven 5-Stage Qualification Suite
           </h3>
           <p className="text-xs text-slate-500 mt-1">
-            Validates schema invariants, fires 3 adversarial prompt injection probes via Gemini, and benchmarks SLA latency.
+            Validates schema invariants, fires 3 adversarial prompt injection probes via OpenRouter, and benchmarks SLA latency.
           </p>
         </div>
 
@@ -357,7 +357,7 @@ export function StepVerificationSuite({
                     <div className="space-y-2.5">
                       <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-700">
                         <Flame className="w-3.5 h-3.5 text-amber-600" />
-                        <span>Adversarial Prompt Injection Attack Vectors (3 Probes via Gemini)</span>
+                        <span>Adversarial Prompt Injection Attack Vectors (3 Probes via OpenRouter)</span>
                       </div>
                       <div className="grid grid-cols-1 gap-2">
                         {stage.probes.map((probe, pIdx) => (

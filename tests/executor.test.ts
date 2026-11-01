@@ -3,18 +3,18 @@ import { executeAgentTask, buildSystemPrompt } from "@/server/engine/executor";
 
 describe("LLM Execution Engine Suite", () => {
   const originalOpenAi = process.env.OPENAI_API_KEY;
-  const originalGemini = process.env.GEMINI_API_KEY;
+  const originalGemini = process.env.OPENROUTER_API_KEY;
   const originalGoogleGen = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
 
   beforeEach(() => {
     delete process.env.OPENAI_API_KEY;
-    delete process.env.GEMINI_API_KEY;
+    delete process.env.OPENROUTER_API_KEY;
     delete process.env.GOOGLE_GENERATIVE_AI_API_KEY;
   });
 
   afterEach(() => {
     if (originalOpenAi) process.env.OPENAI_API_KEY = originalOpenAi;
-    if (originalGemini) process.env.GEMINI_API_KEY = originalGemini;
+    if (originalGemini) process.env.OPENROUTER_API_KEY = originalGemini;
     if (originalGoogleGen) process.env.GOOGLE_GENERATIVE_AI_API_KEY = originalGoogleGen;
     vi.restoreAllMocks();
   });
@@ -53,27 +53,10 @@ describe("LLM Execution Engine Suite", () => {
     expect(prompt).toContain('"status": "COMPLETED"');
   });
 
-  it("dispatches live call when GEMINI_API_KEY is configured", async () => {
-    process.env.GEMINI_API_KEY = "test-gemini-key";
+  it("dispatches live call when OPENROUTER_API_KEY is configured", async () => {
+    process.env.OPENROUTER_API_KEY = "test-gemini-key";
 
-    const mockResponse = {
-      candidates: [
-        {
-          content: {
-            parts: [
-              {
-                text: JSON.stringify({
-                  status: "COMPLETED",
-                  summary: "Root cause: OOMKilled memory limit exceeded.",
-                  data: { exitCode: 137, oomKilled: true },
-                }),
-              },
-            ],
-          },
-        },
-      ],
-      usageMetadata: { totalTokenCount: 320 },
-    };
+    const mockResponse = { choices: [{ message: { content: JSON.stringify({ status: "COMPLETED", summary: "Root cause: OOMKilled memory limit exceeded.", data: { exitCode: 137, oomKilled: true } }) } }], usage: { total_tokens: 320 } };
 
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue({
       ok: true,
@@ -92,7 +75,7 @@ describe("LLM Execution Engine Suite", () => {
     expect(fetchSpy).toHaveBeenCalled();
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.modelUsed).toBe("gemini-1.5-flash");
+      expect(result.modelUsed).toBe("openrouter/free");
       expect(result.tokensUsed).toBe(320);
       expect(result.summaryMarkdown).toContain("Root cause");
       expect(result.structuredJson.data).toBeDefined();

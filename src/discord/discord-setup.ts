@@ -45,8 +45,9 @@ async function main() {
   const staff = await choose("Choose a private staff channel", privateChannels.map(c => ({ label: `#${c.name}`, value: c })));
   let response: Response;
   try {
-    response = await fetch("http://127.0.0.1:3000/api/console/keys", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: "Discord support bot" }), signal: AbortSignal.timeout(5000) });
-  } catch { throw new Error("Start Forgent first with npm run dev, then run this command again."); }
+    const baseUrl = (process.env.FORGENT_BASE_URL || "http://127.0.0.1:3000").replace(/\/+$/, "");
+    response = await fetch(`${baseUrl}/api/console/keys`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: "Discord support bot" }), signal: AbortSignal.timeout(15000) });
+  } catch { throw new Error("Cannot reach Forgent. Start the local app or check FORGENT_BASE_URL, then try again."); }
   if (!response.ok) throw new Error(`Could not create a Forgent API key (HTTP ${response.status}).`);
   const { secret } = z.object({ secret: z.string().min(1) }).parse(await response.json());
   process.env.DISCORD_GUILD_ID = guild.id;

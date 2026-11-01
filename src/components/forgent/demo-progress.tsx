@@ -1,0 +1,5 @@
+import { Check, LoaderCircle } from "lucide-react";
+
+export function DemoProgress({steps, active, complete, simulated = false}:{steps:string[];active:number;complete:boolean;simulated?:boolean}) {
+ return <div className="demo-progress" role="status" aria-live="polite"><div className="demo-progress-head"><div><span className="content-kicker">{simulated ? "SIMULATED RUN" : "LIVE HANDOFF"}</span><strong>{complete ? "Complete" : "Working through the steps"}</strong></div>{!complete && <LoaderCircle size={19} className="demo-progress-spinner"/>}</div><div className="demo-progress-steps">{steps.map((step,index)=>{const done=complete||index<active;const current=!complete&&index===active;return <div className={`demo-progress-step ${done?"is-done":current?"is-current":""}`} key={step}><span>{done?<Check size={13}/>:String(index+1).padStart(2,"0")}</span><strong>{step}</strong><small>{done?"Done":current?"In progress":"Waiting"}</small></div>})}</div>{simulated&&<p>Illustrative progress using fictional data. No IOMETE connection is made.</p>}</div>;
+}

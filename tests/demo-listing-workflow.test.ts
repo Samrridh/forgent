@@ -17,8 +17,8 @@ describe("builder to individual demo", () => {
     expect(created.status).toBe(201);
     const { listing } = await created.json();
     expect((await (await list()).json()).listings.map((item: { id: string }) => item.id)).toContain(listing.id);
-    vi.stubEnv("GEMINI_API_KEY", "test-key");
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: "Demo result" }] } }] }), { status: 200 }));
+    vi.stubEnv("OPENROUTER_API_KEY", "test-key");
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(JSON.stringify({ choices: [{ message: { content: "Demo result" } }] }), { status: 200 }));
     const result = await run(request("http://localhost/api/demo/listings/run", { task: "Summarize this sample" }), { params: Promise.resolve({ id: listing.id }) });
     expect(await result.json()).toEqual({ answer: "Demo result", mode: "simulation", chargedPaise: 0 });
   });

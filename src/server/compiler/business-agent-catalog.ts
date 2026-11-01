@@ -37,9 +37,8 @@ export async function listCompilerAgents(): Promise<{ agents: CompilerAgent[]; s
       capabilities: [listing.category], permissions: [], limitations: ["Builder-hosted endpoint; behavior and permissions require review."],
       pricePaise: listing.pricePaise, latencyMs: 0, inputSchema: listing.inputSchema, outputSchema: listing.outputSchema,
     })));
-    if (agents.length || process.env.NODE_ENV === "production") return { agents: process.env.NODE_ENV === "production" ? agents : [...agents, sample], source: "database" };
+    if (agents.length) return { agents: process.env.NODE_ENV === "production" ? agents : [...agents, sample], source: "database" };
   } catch {
-    if (process.env.NODE_ENV === "production") throw new Error("Agent registry unavailable");
     fallbackReason = "unavailable";
   }
   return { source: "seed", fallbackReason, agents: [...getMarketplaceManifests().filter((item) => item.executionEligible).map((item) => ({

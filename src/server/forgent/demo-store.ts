@@ -26,6 +26,10 @@ async function readStore(): Promise<DemoStore> {
   }
 }
 export async function withDemoStore<T>(fn: (store: DemoStore) => T | Promise<T>, write = false): Promise<T> {
+  if (process.env.VERCEL === "1") {
+    const { withDatabaseDemoStore } = await import("./database-demo-store");
+    return withDatabaseDemoStore(fn, initialStore, value => storeSchema.parse(value) as DemoStore, write);
+  }
   const prior = shared.__forgentStoreQueue || Promise.resolve();
   let release!: () => void;
   shared.__forgentStoreQueue = new Promise<void>(resolve => { release = resolve; });

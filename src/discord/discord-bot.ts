@@ -13,7 +13,7 @@ const supportChannelId=process.env.DISCORD_SUPPORT_CHANNEL_ID!;
 const staffChannelId=process.env.DISCORD_STAFF_CHANNEL_ID!;
 const agentId=process.env.DISCORD_AGENT_ID!;
 if(supportChannelId===staffChannelId){console.error("Support and staff channels must be different.");process.exit(1);}
-const gateway=new ForgentDiscordGateway(process.env.FORGENT_API_KEY!);
+const gateway=new ForgentDiscordGateway(process.env.FORGENT_API_KEY!,process.env.FORGENT_BASE_URL || undefined);
 const client=new Client({intents:[GatewayIntentBits.Guilds,GatewayIntentBits.GuildMessages]});
 const activeReplies=new Set<string>();
 const activeMessages=new Set<string>();

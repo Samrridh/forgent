@@ -1,0 +1,9 @@
+.progress{margin:20px 0;padding:20px;border:1px solid var(--border-default);border-radius:16px;background:var(--surface-primary)}
+.header{display:flex;align-items:flex-start;gap:12px;color:var(--brand-blue)}
+.header strong{font-size:14px}.header p{margin:5px 0 0;color:var(--brand-navy);font-size:13px;line-height:1.5}
+.spinner{flex:none;animation:spin 1s linear infinite}
+.track{height:4px;margin-top:18px;overflow:hidden;border-radius:99px;background:var(--border-default)}
+.track span{display:block;width:38%;height:100%;border-radius:inherit;background:var(--brand-blue);animation:travel 1.5s ease-in-out infinite alternate}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes travel{from{transform:translateX(-100%)}to{transform:translateX(264%)}}
+@media(prefers-reduced-motion:reduce){.spinner,.track span{animation:none}.track span{width:100%}}

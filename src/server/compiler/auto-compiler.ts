@@ -302,18 +302,13 @@ export async function callGeminiDecomposition(
     ].join("\n");
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+      "https://openrouter.ai/api/v1/chat/completions",
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${geminiKey}` },
         signal: controller.signal,
         body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-          systemInstruction: { parts: [{ text: systemPrompt }] },
-          generationConfig: {
-            temperature: 0.1,
-            responseMimeType: "application/json",
-          },
+          model: "openrouter/free", messages: [{ role: "system", content: systemPrompt }, { role: "user", content: prompt }], temperature: 0.1, response_format: { type: "json_object" },
         }),
       }
     );
@@ -322,7 +317,7 @@ export async function callGeminiDecomposition(
 
     if (!response.ok) return null;
     const json = await response.json();
-    const rawText = json?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const rawText = json?.choices?.[0]?.message?.content;
     if (!rawText) return null;
 
     const parsed = JSON.parse(rawText);

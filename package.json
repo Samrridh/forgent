@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1",
     "discord:bot": "tsx src/discord/discord-bot.ts",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",

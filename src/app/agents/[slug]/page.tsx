@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { IometeAgentDemo } from "@/components/forgent/iomete-agent-demo";
 import { AgentDetail } from "@/components/forgent/agent-detail";
 import { PublishedAgentDetail } from "@/components/forgent/published-agent-detail";
 import { DemoListingDetail } from "@/components/forgent/demo-listing-detail";
@@ -8,14 +9,18 @@ import { exampleAgents } from "@/data/example-agents";
 import { withDemoStore } from "@/server/forgent/demo-store";
 import { db } from "@/server/db";
 import { PackageReviewSchema } from "@/server/builder/evaluation/package-review-contract";
+import { isLocalMarketplace, withLocalMarketplace } from "@/server/forgent/local-marketplace";
 
 export const dynamic = "force-dynamic";
 export default async function AgentPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  if (slug === "iomete-sales-insights") return <IometeAgentDemo />;
   if (slug.startsWith("live-")) {
     let listing;
     try {
-      listing = await db.marketplaceListing.findFirst({ where: { id: slug.slice(5), status: "PUBLISHED" }, select: { id: true, name: true, description: true, category: true, pricePaise: true, review: true } });
+      listing = isLocalMarketplace()
+        ? await withLocalMarketplace(store => { const item = store.listings.find(entry => entry.id === slug.slice(5)); return item ? { id: item.id, name: item.details.name, description: item.details.description, category: item.details.category, pricePaise: item.details.pricePaise, review: item.details.review } : null; })
+        : await db.marketplaceListing.findFirst({ where: { id: slug.slice(5), status: "PUBLISHED" }, select: { id: true, name: true, description: true, category: true, pricePaise: true, review: true } });
     } catch {
       return <div className="page-width inner-page"><h1>Agent unavailable</h1><p>Marketplace storage is unavailable. Please try again later.</p></div>;
     }
