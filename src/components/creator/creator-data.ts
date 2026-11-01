@@ -160,7 +160,7 @@ export const DEFAULT_WIZARD_FORM: PublishWizardForm = {
   ),
   pricePerTaskUsd: 2.50,
   endpointType: "webhook",
-  webhookUrl: "https://api.yourdomain.com/v1/forgent-agent",
+  webhookUrl: "",
   hmacSecret: "whsec_live_9a7b6c5d4e3f2a1b0c9d8e7f",
   selectedTemplateId: "financial-auditor",
   verificationPassed: false,

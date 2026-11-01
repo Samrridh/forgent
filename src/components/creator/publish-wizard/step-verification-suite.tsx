@@ -1,5 +1,7 @@
 "use client";
 
+import { readApiResponse } from "@/lib/read-api-response";
+
 import React, { useState } from "react";
 import { PublishWizardForm } from "../creator-types";
 import { QualificationReport, QualificationProbe } from "@/server/builder/qualify-engine";
@@ -134,7 +136,7 @@ export function StepVerificationSuite({
         }),
       });
 
-      const report: QualificationReport = await response.json();
+      const report: QualificationReport = await readApiResponse(response);
 
       if (!response.ok || !report.stages) {
         throw new Error(report ? JSON.stringify(report) : "Failed to run qualification suite");

@@ -1,11 +1,13 @@
 "use client";
 
+import { readApiResponse } from "@/lib/read-api-response";
+
 import { useState } from "react";
 import type { PublishWizardForm } from "../creator-types";
 import type { PackageReview } from "@/server/builder/evaluation/package-review-contract";
 import { ProposedTestCards } from "@/components/builder/proposed-test-cards";
 
-export type ReviewResult = { report: PackageReview; filesReviewed: string[] };
+export type ReviewResult = { report: PackageReview; filesReviewed: string[]; hostedRuntime: "knowledge-support-v1" | null };
 
 export function StepPackageReview({ formData, onReviewChange }: { formData: PublishWizardForm; onReviewChange: (result: ReviewResult | null) => void }) {
   const [file, setFile] = useState<File | null>(null);
@@ -22,7 +24,7 @@ export function StepPackageReview({ formData, onReviewChange }: { formData: Publ
     setLoading(true); setError(""); setReview(null); onReviewChange(null);
     try {
       const response = await fetch("/api/builder/package-review", { method: "POST", body: data });
-      const result = await response.json() as ReviewResult & { error?: string };
+      const result = await readApiResponse(response) as ReviewResult & { error?: string };
       if (!response.ok) throw new Error(result.error || "Could not review the package.");
       setReview(result); onReviewChange(result);
     } catch (err) { setError(err instanceof Error ? err.message : "Could not review the package."); }

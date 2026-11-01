@@ -65,7 +65,7 @@ export function PublishWizard({ onCancel }: PublishWizardProps) {
         setValidationError("Input Schema and Output Format must be valid JSON.");
         return false;
       }
-    } else if (currentStep === 4) {
+    } else if (currentStep === 4 && (formData.webhookUrl.trim() || !review?.hostedRuntime)) {
       try {
         const endpoint = new URL(formData.webhookUrl);
         if (endpoint.protocol !== "https:" || endpoint.username || endpoint.password || endpoint.search || endpoint.hash) throw new Error();
@@ -154,13 +154,13 @@ export function PublishWizard({ onCancel }: PublishWizardProps) {
           <StepTaskContract formData={formData} onChange={updateFormData} />
         )}
         {currentStep === 4 && (
-          <section className="space-y-4"><div className="border-b border-border-subtle pb-4"><h3 className="text-base font-bold text-slate-900">Step 4: Builder-hosted endpoint</h3><p className="text-xs text-slate-500 mt-1">Your service receives a POST request with a JSON task and returns a JSON result.</p></div><label className="block text-sm font-semibold text-slate-800">Public HTTPS endpoint<input className="form-input mt-2" type="url" value={formData.webhookUrl} onChange={(event) => updateFormData({ webhookUrl: event.target.value })} placeholder="https://your-agent.example/run" /></label><div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">Expected request: <code>{'{"task":"..."}'}</code>. Expected response: <code>{'{"result":"..."}'}</code>. Do not put credentials in the URL. The uploaded ZIP is not deployed.</div></section>
+          <section className="space-y-4"><div className="border-b border-border-subtle pb-4"><h3 className="text-base font-bold text-slate-900">Step 4: Builder-hosted endpoint</h3><p className="text-xs text-slate-500 mt-1">Your service receives a POST request with a JSON task and returns a JSON result.</p></div><label className="block text-sm font-semibold text-slate-800">Public HTTPS endpoint<input className="form-input mt-2" type="url" value={formData.webhookUrl} onChange={(event) => updateFormData({ webhookUrl: event.target.value })} placeholder="https://your-agent.example/run" /></label><div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">Expected request: <code>{'{"task":"..."}'}</code>. Expected response: <code>{'{"result":"..."}'}</code>. Do not put credentials in the URL. The uploaded ZIP is not deployed.{review?.hostedRuntime && " For the built-in support sample, you can leave this blank to test the platform-owned sample. Publishing still requires a hosted endpoint."}</div></section>
         )}
         <div hidden={currentStep !== 3}>
           <StepPackageReview key={JSON.stringify([formData.name, formData.bio, formData.inputSchema, formData.outputFormat])} formData={formData} onReviewChange={setReview} />
         </div>
         {currentStep === 5 && (
-          <StepReviewSummary report={review?.report || null} formData={formData} onBackToPackage={() => setCurrentStep(3)} />
+          <StepReviewSummary report={review?.report || null} hostedRuntime={review?.hostedRuntime || null} formData={formData} onBackToPackage={() => setCurrentStep(3)} />
         )}
       </div>
 

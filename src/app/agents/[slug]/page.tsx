@@ -7,6 +7,7 @@ import { ExampleAgentDetail } from "@/components/forgent/example-agent-detail";
 import { exampleAgents } from "@/data/example-agents";
 import { withDemoStore } from "@/server/forgent/demo-store";
 import { db } from "@/server/db";
+import { PackageReviewSchema } from "@/server/builder/evaluation/package-review-contract";
 
 export const dynamic = "force-dynamic";
 export default async function AgentPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -14,12 +15,13 @@ export default async function AgentPage({ params }: { params: Promise<{ slug: st
   if (slug.startsWith("live-")) {
     let listing;
     try {
-      listing = await db.marketplaceListing.findFirst({ where: { id: slug.slice(5), status: "PUBLISHED" }, select: { id: true, name: true, description: true, category: true, pricePaise: true } });
+      listing = await db.marketplaceListing.findFirst({ where: { id: slug.slice(5), status: "PUBLISHED" }, select: { id: true, name: true, description: true, category: true, pricePaise: true, review: true } });
     } catch {
       return <div className="page-width inner-page"><h1>Agent unavailable</h1><p>Marketplace storage is unavailable. Please try again later.</p></div>;
     }
     if (!listing) notFound();
-    return <MarketplaceListingDetail listing={listing} />;
+    const review = PackageReviewSchema.safeParse(listing.review);
+    return <MarketplaceListingDetail listing={{ ...listing, evaluation: review.success ? review.data.evaluation ?? null : null }} />;
   }
   if (slug.startsWith("demo-")) {
     const listing = await withDemoStore((store) => store.demoListings?.find((item) => item.id === slug.slice(5)));

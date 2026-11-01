@@ -1,5 +1,7 @@
 "use client";
 
+import { readApiResponse } from "@/lib/read-api-response";
+
 import React, { useState } from "react";
 import { PublishWizardForm } from "../creator-types";
 import { STARTER_TEMPLATES } from "@/server/templates/template-definitions";
@@ -82,7 +84,7 @@ export function StepEndpoint({ formData, onChange }: StepEndpointProps) {
         }),
       });
 
-      const data = await response.json();
+      const data = await readApiResponse<{ success?: boolean; statusCode?: number; latencyMs?: number; signatureVerified?: boolean; challengeId?: string; message?: string }>(response);
       if (response.ok && data.success) {
         setVerificationFeedback({
           status: "success",

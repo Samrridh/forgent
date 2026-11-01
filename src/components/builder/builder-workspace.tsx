@@ -1,5 +1,7 @@
 "use client";
 
+import { readApiResponse } from "@/lib/read-api-response";
+
 import { useState, type FormEvent } from "react";
 import type { PackageReview } from "@/server/builder/evaluation/package-review-contract";
 import { ProposedTestCards } from "@/components/builder/proposed-test-cards";
@@ -26,7 +28,7 @@ export function BuilderWorkspace({ embedded = false }: { embedded?: boolean }) {
     setError(""); setLoading(true);
     try {
       const response = await fetch("/api/builder/package-review", { method: "POST", body: form });
-      const data = await response.json() as Report & { error?: string };
+      const data = await readApiResponse(response) as Report & { error?: string };
       if (!response.ok) throw new Error(data.error || "Review failed.");
       setResult(data); setTab("report");
     } catch (err) { setError(err instanceof Error ? err.message : "Review failed."); }

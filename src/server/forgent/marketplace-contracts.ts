@@ -10,6 +10,17 @@ export const MarketplaceListingInputSchema = z.strictObject({
   outputSchema: z.record(z.string(), z.json()),
   pricePaise: z.number().int().min(0).max(100000000),
   review: PackageReviewSchema,
+}).superRefine((listing, context) => {
+  const evaluation = listing.review.evaluation;
+  if (!evaluation || evaluation.scorePercent === null || evaluation.cases.length !== evaluation.approvedCases.length) {
+    context.addIssue({ code: "custom", message: "A scorable demo evaluation is required." });
+    return;
+  }
+  const count = (status: string) => evaluation.cases.filter((item) => item.status === status).length;
+  const passed = count("passed"); const failed = count("failed");
+  if (evaluation.passed !== passed || evaluation.failed !== failed || evaluation.errors !== count("error") || evaluation.unsupported !== count("unsupported") || !passed && !failed || evaluation.scorePercent !== Math.round(100 * passed / (passed + failed))) {
+    context.addIssue({ code: "custom", message: "Evaluation totals are inconsistent." });
+  }
 });
 export const MarketplaceOrderInputSchema = z.strictObject({
   listingId: z.string().min(1).max(100),
