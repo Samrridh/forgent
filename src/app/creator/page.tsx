@@ -1,22 +1,8 @@
-import { CreatorStudio, CreatorStudioTab } from "@/components/creator/creator-studio";
+import { redirect } from "next/navigation";
 
-interface CreatorPageProps {
-  searchParams?: Promise<{ tab?: string }>;
-}
-
-export default async function CreatorPage({
-  searchParams,
-}: CreatorPageProps) {
-  const params = await searchParams;
-  const tab = params?.tab as CreatorStudioTab | undefined;
-  const validTabs: CreatorStudioTab[] = [
-    "my-agents",
-    "analytics",
-    "publish",
-    "earnings",
-  ];
-  const initialTab =
-    tab && validTabs.includes(tab) ? tab : "my-agents";
-
-  return <CreatorStudio initialTab={initialTab} />;
+export default async function CreatorPage({ searchParams }: { searchParams?: Promise<{ tab?: string }> }) {
+  const tab = (await searchParams)?.tab;
+  const destinations: Record<string, string> = { publish: "upload", "my-agents": "agents", profile: "profile" };
+  const target = tab ? destinations[tab] : undefined;
+  redirect(target ? `/publish?tab=${target}` : "/publish");
 }

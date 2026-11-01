@@ -1,5 +1,2 @@
-import { CreatorStudio } from "@/components/creator/creator-studio";
-
-export default function BuilderAgentsPublishPage() {
-  return <CreatorStudio initialTab="publish" />;
-}
+import { redirect } from "next/navigation";
+export default function BuilderAgentsPublishPage() { redirect("/publish?tab=upload"); }

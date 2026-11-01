@@ -1,12 +1,8 @@
-import { CreatorStudio, type CreatorStudioTab } from "@/components/creator/creator-studio";
+import { redirect } from "next/navigation";
 
-interface BuilderOverviewPageProps {
-  searchParams?: Promise<{ tab?: string }>;
-}
-
-export default async function BuilderOverviewPage({ searchParams }: BuilderOverviewPageProps) {
-  const params = await searchParams;
-  const validTabs: CreatorStudioTab[] = ["my-agents", "analytics", "publish", "earnings", "package-review", "profile"];
-  const tab = params?.tab as CreatorStudioTab | undefined;
-  return <CreatorStudio initialTab={tab && validTabs.includes(tab) ? tab : "my-agents"} />;
+export default async function BuilderOverviewPage({ searchParams }: { searchParams?: Promise<{ tab?: string }> }) {
+  const tab = (await searchParams)?.tab;
+  const destinations: Record<string, string> = { publish: "upload", "my-agents": "agents", profile: "profile" };
+  const target = tab ? destinations[tab] : undefined;
+  redirect(target ? `/publish?tab=${target}` : "/publish");
 }
