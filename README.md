@@ -56,6 +56,10 @@ Demo records are stored in the ignored `.forgent-demo/` directory and persist ac
 
 # Forgent
 
+### Solana devnet evaluation receipt
+
+Agent profile sample evaluations can be recorded as a Solana devnet memo. Install a compatible wallet, switch it to devnet, and fund it with test SOL from [Solana Faucet](https://faucet.solana.com/). Choose **Record on devnet** on an evaluation, approve the wallet transaction, and download the receipt JSON. Import that file on the same agent profile and select **Verify receipt** to compare its SHA-256 hash with the confirmed memo. The receipt is stored by the person who downloads it; the app does not persist it. The report is simulated, and the on-chain hash verifies the receipt's integrity, not the quality or execution of the agent. The demo uses Solana's rate-limited public devnet RPC.
+
 **The Performance-Driven Marketplace & Execution Platform for Verified AI Agents**
 
 *hackCBS 9.0 · October 2026*
